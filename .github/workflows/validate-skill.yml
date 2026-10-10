@@ -1,0 +1,83 @@
+name: validate-skill
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate gazebo-world-builder skill
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check SKILL.md exists
+        run: |
+          set -euo pipefail
+          if [[ ! -f SKILL.md ]]; then
+            echo "::error file=SKILL.md::缺少 SKILL.md — 技能根目录必须直接包含 SKILL.md"
+            exit 1
+          fi
+          echo "OK: SKILL.md 存在"
+
+      - name: Validate YAML frontmatter
+        run: |
+          set -euo pipefail
+
+          if [[ "$(head -n1 SKILL.md | tr -d '\r')" != "---" ]]; then
+            echo "::error file=SKILL.md::SKILL.md 必须以 YAML frontmatter (---) 开头"
+            exit 1
+          fi
+
+          # 提取首个 --- 与第二个 --- 之间的内容
+          awk '/^---[[:space:]]*$/{c++; if(c==2) exit; next} c==1{print}' \
+            SKILL.md > /tmp/frontmatter.yml
+
+          if ! grep -qE '^name:' /tmp/frontmatter.yml; then
+            echo "::error file=SKILL.md::frontmatter 缺少 'name' 字段"
+            exit 1
+          fi
+          if ! grep -qE '^description:' /tmp/frontmatter.yml; then
+            echo "::error file=SKILL.md::frontmatter 缺少 'description' 字段"
+            exit 1
+          fi
+
+          NAME="$(grep -E '^name:' /tmp/frontmatter.yml | head -n1 \
+            | sed -E 's/^name:[[:space:]]*//' | tr -d '\r' | sed -E 's/[[:space:]]+$//')"
+          if [[ "$NAME" != "gazebo-world-builder" ]]; then
+            echo "::error file=SKILL.md::frontmatter 'name' 必须为 'gazebo-world-builder', 实际为 '${NAME}'"
+            exit 1
+          fi
+          echo "OK: frontmatter name='${NAME}'"
+
+      - name: Check scripts line endings and permissions
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          scripts=(scripts/*.sh)
+          if (( ${#scripts[@]} == 0 )); then
+            echo "::error::未找到 scripts/*.sh"
+            exit 1
+          fi
+
+          fail=0
+          for f in "${scripts[@]}"; do
+            if grep -qU $'\r' "$f"; then
+              echo "::error file=$f::检测到 CRLF 换行 — 请改为 LF"
+              fail=1
+            fi
+            if [[ ! -x "$f" ]]; then
+              echo "::error file=$f::脚本缺少可执行权限 — 请 chmod +x"
+              fail=1
+            fi
+            echo "OK: ${f}"
+          done
+
+          exit "$fail"
