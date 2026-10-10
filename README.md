@@ -2,13 +2,11 @@
 
 > 快速创建 Gazebo 仿真环境的 AI Agent Skill，支持 WSL、Ubuntu 22.04/24.04、ROS 2 Jazzy/Humble、Gazebo Harmonic。
 
-[![validate-skill](https://github.com/<your-github-username>/gazebo-world-builder/actions/workflows/validate-skill.yml/badge.svg)](https://github.com/<your-github-username>/gazebo-world-builder/actions/workflows/validate-skill.yml)
+[![validate-skill](https://github.com/Bonham433/gazebo-world-builder/actions/workflows/validate-skill.yml/badge.svg)](https://github.com/Bonham433/gazebo-world-builder/actions/workflows/validate-skill.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 `gazebo-world-builder` 是一个只做一件事的 Agent Skill：让 AI 助手帮你**从零搭建可运行的 Gazebo 世界**——
 环境检测、依赖安装、SDF 世界编写、URDF 导入、传感器配置，以及与 ROS 2 的 launch 集成。
-
-<!-- TODO: 把上面的 <your-github-username> 替换为你的 GitHub 用户名。 -->
 
 ## 特性
 
@@ -23,7 +21,7 @@
 ```bash
 git clone https://github.com/<your-github-username>/gazebo-world-builder.git
 cd gazebo-world-builder
-
+Bonham433
 # 默认模式 (link): 在当前仓库与技能目录之间建立符号链接
 ./install.sh
 
